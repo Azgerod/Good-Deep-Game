@@ -1,22 +1,48 @@
+import os
+
+
+class Context:
+    def __init__(self, description, command_intro, commands, prompt):
+        self.description = description
+        self.command_intro = command_intro
+        self.commands = commands
+        self.commands['exit'] = exit
+        self.prompt = prompt
+
+
+    def command_list(self):
+        phrases = self.commands.keys()
+        return 'Enter a command.\n' + '\n'.join(phrases)
+
+    def __str__(self):
+        return self.description + 2*'\n' + self.command_intro + '\n' + self.command_list()
+
+    def request(self):
+        return input('\n' + self.prompt + ' ')
+    
+    def execute(self, phrase):
+        executor = self.commands[phrase]
+        executor()
+
+    def __call__(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(self)
+        while True:
+            self.execute(self.request())
+
 
 # Command definitions
-c_new_game = "new"
-c_continue = "resume"
-c_help = "help"
-c_exit = "exit"
+def new_game():
+    print('Yep this is the game.')
 
-execute = {
-    c_new_game: f_new_game,
-    c_continue: f_continue,
-    c_help: f_help,
-    c_exit: f_exit,
-}
+def resume():
+    print('Resuming :)')
 
-initial_prompt = "Enter a command ('{c_help}' for help): "
-command = input(initial_prompt)
+mm_description = "Welcome to our game."
+mm_command_intro = "Enter one of the following commands."
+mm_commands = {'new': new_game, 'resume': resume}
+mm_prompt_string = '>'
 
-prompt = "||>" + " "
+main_menu = Context(mm_description, mm_command_intro, mm_commands, mm_prompt_string)
 
-while command != c_exit:
-    execute[command]()
-    command = input(prompt)
+main_menu()
