@@ -1,26 +1,37 @@
 import os
 
 
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+clear()
+
+
 class Context:
     def __init__(self, description, command_header, commands, prompt):
         self.description = description
-        self.command_intro = command_header
+        self.command_header = command_header
         self.commands = commands
         self.commands['exit'] = exit
         self.prompt = prompt
 
-    def set_commands(self, commands):
-        self.commands.clear()
-        self.commands.update(commands)
-        self.commands['exit'] = exit
+    def command_body(self):
+        phrases = self.commands.keys()
+        return '\n'.join(phrases)
+
+    def line(self):
+        length = max(len(self.description), len(self.command_header))
+        return
 
     def __str__(self):
         return f"""
-        {self.description}
+{Context.line}
+{self.description}
         
-        {self.command_intro}
-        {self.command_list()}
-        """
+{self.command_header}
+{self.command_body()}
+{Context.line}"""
 
     def request(self):
         return input('\n' + self.prompt + ' ')
@@ -30,26 +41,26 @@ class Context:
         executor()
 
     def __call__(self):
-        os.system('cls || clear')
+        clear()
         print(self)
         self.execute(self.request())
 
 
 # Context definitions
-main_menu = Context('Welcome to the Main Menu context.',
-                    'Enter one of the following commands.',
+main_menu = Context('Welcome to our game.',
+                    'Please peruse our humble selection of commands.',
                     {'new': lambda: new_game(), 'resume': lambda: resume()},
                     '>')
 
-new_game = Context('You have entered the New Game context.',
-                   "Return to the menu when you're ready",
+new_game = Context('You lie naked on soil. No light penetrates your closed eyelids. All is silent and still.',
+                   "Consider.",
                    {'menu': lambda: main_menu()},
-                   '|>')
+                   '>')
 
 resume = Context('You have resumed',
                  'Nothing to see here.',
                  {'menu': lambda: main_menu()},
-                 '->>')
+                 '>>')
 
 # Run the game
 main_menu()
