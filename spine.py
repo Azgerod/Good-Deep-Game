@@ -9,7 +9,7 @@ clear()
 
 
 class Context:
-    def __init__(self, description, command_header, commands, prompt):
+    def __init__(self, description, command_header, commands, elements, prompt):
         self.description = description
         self.command_header = command_header
         self.commands = commands
@@ -21,17 +21,18 @@ class Context:
         return '\n'.join(phrases)
 
     def line(self):
-        length = max(len(self.description), len(self.command_header))
-        return
+        length = max(len(self.description), len(self.command_header)) + 2
+        return length * '-'
 
     def __str__(self):
+        # Fix this atrocity (later)
         return f"""
-{Context.line}
+{self.line()}
 {self.description}
         
 {self.command_header}
 {self.command_body()}
-{Context.line}"""
+{self.line()}"""
 
     def request(self):
         return input('\n' + self.prompt + ' ')
