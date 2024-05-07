@@ -113,9 +113,16 @@ class Container(Item, Place):
         Place.__init__(description, commands, contents, style)
 
 
+# Context definitions
 main_menu = Context('Welcome to our game.',
                     {'Start a new game.': lambda: move(new_game),
                      'Continue a previous game.': lambda: move(resume)})
+
+new_game = Context('You lie naked on soil.\nNo light penetrates your closed eyelids.\nAll is silent and still.',
+                   {'Return to the main menu.': lambda: move(main_menu)})
+
+resume = Context('You have resumed.',
+                 {'Return to the main menu.': lambda: move(main_menu)})
 
 # State variables:
 stack = [main_menu]
@@ -141,10 +148,3 @@ while len(stack) > 0:
     entity = stack[-1]
     entity()
 
-# Context definitions
-
-new_game = Context('You lie naked on soil.\nNo light penetrates your closed eyelids.\nAll is silent and still.',
-                   {'Return to the main menu.': lambda: move(main_menu)})
-
-resume = Context('You have resumed.',
-                 {'Return to the main menu.': lambda: move(main_menu)})
