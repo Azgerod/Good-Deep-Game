@@ -11,7 +11,7 @@ Style = namedtuple('Style', ['corner', 'h_bord', 'v_bord', 'prompt'])
 default_style = Style('+', '-', '|', '>')
 
 
-class Entity:
+class Context:
     def __init__(self, description, commands, style=default_style):
         self.description = description
         self.commands = commands
@@ -21,12 +21,12 @@ class Entity:
         self.v_bord = style.v_bord
         self.prompt = style.prompt
 
-    def promptize(self, command):
+    def promptify(self, command):
         return self.prompt + ' ' + command
 
     def lines(self):
         description_lines = self.description.split('\n')
-        option_lines = [self.promptize(command) for command in self.commands]
+        option_lines = [self.promptify(command) for command in self.commands]
         return description_lines + option_lines
 
     def width(self):
@@ -85,19 +85,19 @@ class Entity:
         execute(self.request())
 
 
-class Item(Entity):
+class Item(Context):
     def __init__(self, access_command, description, commands, style=default_style):
         super().__init__(description, commands, style)
         self.access_command = access_command
 
 
-class Place(Entity):
+class Place(Context):
     def __init__(self, description, commands, contents, style=default_style):
         super().__init__(description, commands, style)
         self.contents = contents
 
     def lines(self):
-        lines = [self.promptize(content.access_command) for content in self.contents]
+        lines = [self.promptify(content.access_command) for content in self.contents]
         return super().lines() + lines
 
     def __str__(self):
@@ -113,21 +113,38 @@ class Container(Item, Place):
         Place.__init__(description, commands, contents, style)
 
 
-# Context definitions
-main_menu = Entity('Welcome to our game.',
-                   {'Start a new game.': lambda: new_game(),
-                    'Continue a previous game.': lambda: resume()})
-
-new_game = Entity('You lie naked on soil.\nNo light penetrates your closed eyelids.\nAll is silent and still.',
-                  {'Return to the main menu.': lambda: main_menu()})
-
-resume = Entity('You have resumed.',
-                {'Return to the main menu.': lambda: main_menu()})
+main_menu = Context('Welcome to our game.',
+                    {'Start a new game.': lambda: move(new_game),
+                     'Continue a previous game.': lambda: move(resume)})
 
 # State variables:
 stack = [main_menu]
 
+
+def move(place):
+    global stack
+    stack = [place]
+
+
+def back():
+    global stack
+    stack.pop(-1)
+
+
+def step_into(place):
+    global stack
+    stack.append(place)
+
+
 # Run the game
 while len(stack) > 0:
-    context = stack.pop(-1)
-    context()
+    entity = stack[-1]
+    entity()
+
+# Context definitions
+
+new_game = Context('You lie naked on soil.\nNo light penetrates your closed eyelids.\nAll is silent and still.',
+                   {'Return to the main menu.': lambda: move(main_menu)})
+
+resume = Context('You have resumed.',
+                 {'Return to the main menu.': lambda: move(main_menu)})
